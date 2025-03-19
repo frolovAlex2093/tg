@@ -29,3 +29,6 @@ async def main_menu(message: Message, state: FSMContext):
             resize_keyboard=True
         )
     )
+
+def register_common_handlers(dp: Dispatcher):
+    dp.include_router(router)

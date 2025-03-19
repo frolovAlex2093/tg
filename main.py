@@ -1,16 +1,23 @@
 import asyncio
+import os
 from aiogram import Bot, Dispatcher
+from dotenv import load_dotenv
 from handlers import register_common_handlers, register_income_handlers
 
+load_dotenv()
+
 async def main():
-    bot = Bot(token="7515723134:AAFMX449trE4aD2ODHPwfdmlsCfvv-gKlUM")
+    bot_token = os.getenv("BOT_TOKEN")
+    if not bot_token:
+        raise ValueError("Не задан токен бота! Укажите его в .env")
+
+    bot = Bot(token=bot_token)
     dp = Dispatcher()
 
-    # Регистрация обработчиков
     register_common_handlers(dp)
     register_income_handlers(dp)
 
     await dp.start_polling(bot)
 
-if __name__ == "__main__":
+if __name__ == "main":
     asyncio.run(main())

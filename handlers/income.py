@@ -1,10 +1,13 @@
+import os
+from datetime import datetime
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from aiogram.filters import StateFilter
+from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 
 from services.google_sheets import GoogleSheetsService
+from handlers.common import main_menu_keyboard  # Добавил импорт клавиатуры
 
 router = Router()
 
@@ -19,20 +22,14 @@ class IncomeStates(StatesGroup):
 
 @router.message(F.text == 'Добавить доход')
 async def start_income(message: Message, state: FSMContext):
-    await message.answer(
-        "Введите дату в формате ДД.ММ.ГГГГ (или /today):",
-        reply_markup=ReplyKeyboardRemove()
-    )
+    await message.answer("Введите дату в формате ДД.ММ.ГГГГ (или /today):", reply_markup=ReplyKeyboardRemove())
     await state.set_state(IncomeStates.date)
 
 @router.message(Command('today'), IncomeStates.date)
 async def today_date(message: Message, state: FSMContext):
     today = message.date.strftime('%d.%m.%Y')
     await state.update_data(date=today)
-    await message.answer(
-        f"Используем сегодняшнюю дату: {today}\nВведите название дохода:",
-        reply_markup=ReplyKeyboardRemove()
-    )
+    await message.answer(f"Используем сегодняшнюю дату: {today}\nВведите название дохода:", reply_markup=ReplyKeyboardRemove())
     await state.set_state(IncomeStates.name)
 
 @router.message(IncomeStates.date, F.text)
@@ -102,7 +99,6 @@ async def process_lessons(message: Message, state: FSMContext):
 async def custom_lessons(message: Message, state: FSMContext):
     await message.answer("Введите количество уроков:")
     await state.set_state(IncomeStates.lessons)
-
 @router.message(IncomeStates.lessons, F.text)
 async def process_custom_lessons(message: Message, state: FSMContext):
     if not message.text.isdigit():
@@ -115,9 +111,9 @@ async def process_custom_lessons(message: Message, state: FSMContext):
 async def save_data(message: Message, state: FSMContext):
     data = await state.get_data()
     sheet_service = GoogleSheetsService(
-        credentials_file='credentials.json',
-        sheet_name='Ваша таблица',
-        worksheet_name='Лист1'
+        credentials_file=os.getenv("GOOGLE_SHEETS_CREDS_PATH"),
+        sheet_name=os.getenv("SHEET_NAME"),
+        worksheet_name=os.getenv("WORKSHEET_NAME")
     )
     
     if await sheet_service.append_data([
@@ -136,10 +132,7 @@ async def save_data(message: Message, state: FSMContext):
     else:
         await message.answer(
             "❌ Ошибка при сохранении данных",
-            reply_markup=ReplyKeyboardMarkup(
-                keyboard=main_menu_keyboard,
-                resize_keyboard=True
-            )
+            reply_markup=ReplyKeyboardRemove()
         )
     
     await state.clear()
