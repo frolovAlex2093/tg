@@ -1,1 +1,6 @@
-aiogram gspread google-auth google-api-python-client oauth2client python-dotenv
+aiogram 
+gspread 
+google-auth 
+google-api-python-client 
+oauth2client 
+botpython-dotenv

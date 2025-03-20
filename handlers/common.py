@@ -1,12 +1,17 @@
-from aiogram import Router, F
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram import Router, F, Dispatcher
+from aiogram.types import Message, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from services.google_sheets import GoogleSheetsService
 
+
 router = Router()
-main_menu_keyboard = [['Добавить доход']]
+main_menu_keyboard =  [
+    [KeyboardButton(text='Добавить доход'), KeyboardButton(text='Добавить расход')],
+    [KeyboardButton(text='Добавить оплаченные занятия')],
+    [KeyboardButton(text='Добавить ученика')]
+]
 
 @router.message(Command("start"))
 async def cmd_start(message: Message):

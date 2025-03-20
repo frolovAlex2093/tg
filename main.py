@@ -2,7 +2,7 @@ import asyncio
 import os
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
-from handlers import register_common_handlers, register_income_handlers
+from handlers import register_common_handlers, register_income_handlers, register_expense_handlers, register_paid_handlers, register_student_handlers
 
 load_dotenv()
 
@@ -14,10 +14,15 @@ async def main():
     bot = Bot(token=bot_token)
     dp = Dispatcher()
 
+
     register_common_handlers(dp)
     register_income_handlers(dp)
+    register_expense_handlers(dp)
+    register_paid_handlers(dp)
+    register_student_handlers(dp)
+
 
     await dp.start_polling(bot)
 
-if __name__ == "main":
+if __name__ == "__main__":
     asyncio.run(main())

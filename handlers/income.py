@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
-from aiogram import Router, F
+from aiogram import Router, F, Dispatcher
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 
@@ -11,8 +11,14 @@ from handlers.common import main_menu_keyboard  # Добавил импорт к
 
 router = Router()
 
-income_keyboard = [['10400', '5600', '1500'], ['Свое значение']]
-lesson_keyboard = [['1', '4', '8'], ['Свое значение']]
+income_keyboard =  [
+    [KeyboardButton(text='1500'), KeyboardButton(text='5600'),KeyboardButton(text='10400')],
+    [KeyboardButton(text='Свое значение'), KeyboardButton(text='Отмена')]
+]
+lesson_keyboard =  [
+    [KeyboardButton(text='1'), KeyboardButton(text='4'), KeyboardButton(text='8')],
+    [KeyboardButton(text='Свое значение'), KeyboardButton(text='Отмена')]
+]
 
 class IncomeStates(StatesGroup):
     date = State()
@@ -24,6 +30,20 @@ class IncomeStates(StatesGroup):
 async def start_income(message: Message, state: FSMContext):
     await message.answer("Введите дату в формате ДД.ММ.ГГГГ (или /today):", reply_markup=ReplyKeyboardRemove())
     await state.set_state(IncomeStates.date)
+
+@router.message(IncomeStates.date, F.text == "Отмена")
+@router.message(IncomeStates.name, F.text == "Отмена")
+@router.message(IncomeStates.income, F.text == "Отмена")
+@router.message(IncomeStates.lessons, F.text == "Отмена")
+async def cancel_payment(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        "Операция отменена",
+        reply_markup=ReplyKeyboardMarkup(
+                keyboard=main_menu_keyboard,
+                resize_keyboard=True
+            )
+    )
 
 @router.message(Command('today'), IncomeStates.date)
 async def today_date(message: Message, state: FSMContext):
@@ -121,7 +141,7 @@ async def save_data(message: Message, state: FSMContext):
         data['name'],
         data['income'],
         data['lessons']
-    ]):
+    ], 'A1'):
         await message.answer(
             "✅ Данные успешно сохранены!",
             reply_markup=ReplyKeyboardMarkup(
@@ -132,19 +152,14 @@ async def save_data(message: Message, state: FSMContext):
     else:
         await message.answer(
             "❌ Ошибка при сохранении данных",
-            reply_markup=ReplyKeyboardRemove()
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=main_menu_keyboard,
+                resize_keyboard=True
+            )
         )
     
     await state.clear()
 
-@router.message(Command('cancel'))
-@router.message(F.text == 'Отмена')
-async def cancel_handler(message: Message, state: FSMContext):
-    await state.clear()
-    await message.answer(
-        "Операция отменена",
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=main_menu_keyboard,
-            resize_keyboard=True
-        )
-    )
+
+def register_income_handlers(dp: Dispatcher):
+    dp.include_router(router)
