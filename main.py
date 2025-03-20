@@ -3,6 +3,7 @@ import os
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 from handlers import register_common_handlers, register_income_handlers, register_expense_handlers, register_paid_handlers, register_student_handlers
+from scheduler.paid_sheeeduler import LessonScheduler
 
 load_dotenv()
 
@@ -21,6 +22,8 @@ async def main():
     register_paid_handlers(dp)
     register_student_handlers(dp)
 
+    scheduler = LessonScheduler(bot)
+    scheduler.start()
 
     await dp.start_polling(bot)
 

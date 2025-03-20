@@ -38,3 +38,17 @@ class GoogleSheetsService:
         except Exception as e:
             print(f"Error getting students: {str(e)}")
             return []
+
+        async def get_lesson_dates(self, start_range: str) -> list:
+            """
+            Получает данные о датах последних оплаченных занятий, начиная с указанной ячейки.
+            
+            :param start_range: Имя ячейки (например, "A2"), с которой начинать просмотр.
+            :return: Список списков с данными (ФИО, кол-во занятий, дата).
+            """
+            try:
+                data = self.sheet.get(start_range + ":N")  # Берем столбцы A, B, C начиная с указанной строки
+                return data
+            except Exception as e:
+                print(f"Ошибка при получении данных из Google Sheets: {e}")
+                return []
